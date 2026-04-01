@@ -1,0 +1,1691 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Text2Card | The Digital Atelier</title>
+    <script>
+      if (window.location.protocol === "file:") {
+        const localTarget = "http://127.0.0.1:3000";
+        document.addEventListener("DOMContentLoaded", () => {
+          document.body.innerHTML = `
+            <main style="min-height:100vh;display:grid;place-items:center;padding:32px;background:#fbf9f8;color:#323233;font-family:'PingFang SC','Microsoft YaHei',sans-serif;">
+              <section style="max-width:640px;border:1px solid rgba(141,77,77,0.14);border-radius:24px;background:#fff;padding:32px;box-shadow:0 18px 40px rgba(141,77,77,0.08);">
+                <h1 style="margin:0 0 12px;font-size:28px;line-height:1.2;color:#8d4d4d;">请通过本地服务打开 Text2Card</h1>
+                <p style="margin:0 0 12px;line-height:1.8;">你当前打开的是本地文件 <code>file://</code>，浏览器会拦截页面脚本，所以粘贴、导出、AI 和按钮点击都会失效。</p>
+                <p style="margin:0 0 20px;line-height:1.8;">请改为打开这个地址：</p>
+                <p style="margin:0 0 24px;"><a href="${localTarget}" style="color:#8d4d4d;font-weight:700;font-size:18px;">${localTarget}</a></p>
+                <p style="margin:0;line-height:1.8;">如果页面还没启动，请先在项目目录运行 <code>npm start</code>。</p>
+              </section>
+            </main>
+          `;
+        });
+      }
+    </script>
+    <link href="./favicon.svg" rel="icon" type="image/svg+xml" />
+    <link href="./fonts.local.css?v=20260401-local-fonts-1" rel="stylesheet" />
+    <link href="./tailwind.generated.css" rel="stylesheet" />
+    <link href="./styles.css" rel="stylesheet" />
+  </head>
+  <body
+    class="bg-background text-on-background font-body antialiased selection:bg-primary-container selection:text-on-primary"
+  >
+    <div class="pointer-events-none fixed inset-0 vellum-grid opacity-30"></div>
+
+    <nav
+      class="fixed top-0 z-50 w-full bg-[#fbf9f8]/80 backdrop-blur-xl shadow-[0_12px_40px_rgba(141,77,77,0.08)]"
+    >
+      <div
+        class="mx-auto flex w-full max-w-[1920px] flex-wrap items-center justify-between gap-4 px-4 py-4 sm:gap-6 sm:px-6 lg:px-10 xl:px-12"
+      >
+        <div class="flex min-w-0 items-center gap-5 lg:gap-12">
+          <button
+            class="min-w-0 font-headline text-left text-xl italic text-[#8d4d4d] sm:text-2xl"
+            data-app-view="workspace"
+            type="button"
+          >
+            The Digital Atelier
+          </button>
+          <div class="flex items-center gap-5 text-sm font-medium sm:gap-8">
+            <button
+              class="app-nav-link border-b-2 border-[#8d4d4d] pb-1 text-[#8d4d4d]"
+              data-app-view="workspace"
+              type="button"
+            >
+              Workspace
+            </button>
+            <button
+              class="app-nav-link pb-1 text-[#323233]/60 transition-all duration-300 hover:text-[#8d4d4d]"
+              data-app-view="export"
+              type="button"
+            >
+              Export
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="h-px w-full bg-[#efeded]"></div>
+    </nav>
+
+    <section class="app-view" id="workspaceView">
+      <main
+        class="min-h-screen px-4 pb-10 pt-32 sm:px-6 sm:pt-24 lg:px-10 xl:px-20 xl:pr-80"
+      >
+        <div class="flex flex-col gap-0 xl:flex-row xl:items-stretch">
+          <section
+            class="flex-1 p-4 md:p-8 xl:flex xl:min-h-[680px] xl:self-stretch xl:p-12"
+          >
+            <div class="mx-auto flex w-full max-w-3xl flex-1 flex-col">
+              <div class="relative flex w-full flex-1 flex-col">
+                <div
+                  class="pointer-events-none absolute inset-0 vellum-grid"
+                ></div>
+                <h2 class="mb-6 font-headline text-2xl italic text-primary">
+                  Content Input
+                </h2>
+                <textarea
+                  class="content-editor min-h-[280px] w-full flex-1 resize-none rounded-[28px] border border-[rgba(236,231,228,0.92)] bg-white/88 px-6 py-5 text-[clamp(1rem,1.55vw,1.12rem)] leading-relaxed text-on-surface-variant shadow-[0_18px_40px_rgba(141,77,77,0.05)] outline-none transition-colors duration-200 placeholder:text-on-surface-variant/45 focus:border-primary/35 focus:bg-white focus:ring-0 xl:min-h-0 xl:w-[400px] xl:max-w-none xl:-translate-x-12"
+                  id="editorInput"
+                  placeholder="在这里输入或粘贴正文，系统会自动生成适合小红书发布的分页预览。"
+                  spellcheck="false"
+                >
+The golden hour light filtered through the studio window,
+casting long, soft shadows across the vellum sheets. It was in
+these quiet moments that the Digital Atelier truly breathed.
+We strive for a balance between the organic and the digital, a
+place where pixels carry the weight of ink.
+
+Start writing your story here. Let the minimalist interface
+disappear as your ideas take shape...</textarea
+                >
+              </div>
+            </div>
+          </section>
+
+          <section
+            class="workspace-preview w-full bg-surface-container-low p-6 md:p-8 xl:w-[480px] xl:p-10"
+          >
+            <div
+              class="mx-auto flex w-full max-w-[360px] flex-col items-center gap-6"
+            >
+              <div class="w-full">
+                <h2
+                  class="mb-6 self-start font-headline text-2xl italic text-primary"
+                >
+                  Visual Preview
+                </h2>
+                <div
+                  class="mb-2 flex w-full gap-1 rounded-lg bg-surface-container p-1"
+                >
+                  <button
+                    class="preview-toggle is-active flex-1 rounded-md py-1.5 text-xs font-label font-bold transition-all"
+                    data-preview-mode="cover"
+                    type="button"
+                  >
+                    封面
+                  </button>
+                  <button
+                    class="preview-toggle flex-1 rounded-md py-1.5 text-xs font-label font-bold transition-all"
+                    data-preview-mode="body"
+                    type="button"
+                  >
+                    正文
+                  </button>
+                </div>
+              </div>
+
+              <div class="w-full">
+                <div
+                  class="preview-card preview-card-cover mb-8 rounded-xl bg-white p-8 sm:p-10"
+                  id="coverPreviewCard"
+                >
+                  <div
+                    class="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-container/20 text-3xl shadow-sm"
+                    id="coverBadge"
+                  >
+                    <span
+                      class="material-symbols-outlined text-primary"
+                      id="coverBadgeIcon"
+                      >auto_awesome</span
+                    >
+                  </div>
+                  <div class="flex-1 space-y-4">
+                    <h3
+                      class="font-headline text-3xl font-bold leading-tight text-on-surface"
+                      id="coverTitle"
+                    >
+                      Principles of Creative Digital Craftsmanship
+                    </h3>
+                    <div
+                      class="cover-highlights-list space-y-3 text-sm leading-relaxed text-on-surface-variant opacity-80"
+                      id="coverHighlights"
+                    >
+                      <div class="cover-highlight-item">
+                        <span class="cover-highlight-dot"></span>
+                        <span>Sharper headline hook</span>
+                      </div>
+                      <div class="cover-highlight-item">
+                        <span class="cover-highlight-dot"></span>
+                        <span>Scannable cover takeaways</span>
+                      </div>
+                      <div class="cover-highlight-item">
+                        <span class="cover-highlight-dot"></span>
+                        <span>Synced body page title</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="mt-8 flex items-center justify-between border-t border-surface-container pt-6"
+                  >
+                    <span
+                      class="text-[10px] font-label font-bold uppercase tracking-widest text-primary"
+                      id="coverFooterLabel"
+                      >Core Philosophy</span
+                    >
+                    <span class="material-symbols-outlined text-surface-variant"
+                      >arrow_forward</span
+                    >
+                  </div>
+                </div>
+
+                <div class="body-preview-panel hidden" id="bodyPreviewPanel">
+                  <div
+                    class="mb-4 flex items-center justify-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-outline-variant"
+                  >
+                    <div class="flex items-center gap-2">
+                      <button
+                        class="body-page-nav"
+                        id="bodyPrevPageButton"
+                        type="button"
+                      >
+                        <span class="material-symbols-outlined text-base"
+                          >chevron_left</span
+                        >
+                      </button>
+                      <span
+                        class="min-w-[88px] text-center tracking-[0.18em]"
+                        id="bodyPageIndicator"
+                        >Page 1 / 1</span
+                      >
+                      <button
+                        class="body-page-nav"
+                        id="bodyNextPageButton"
+                        type="button"
+                      >
+                        <span class="material-symbols-outlined text-base"
+                          >chevron_right</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    class="preview-card preview-card-body rounded-xl bg-white p-8 sm:p-10"
+                    id="bodyPreviewCard"
+                  ></div>
+                </div>
+              </div>
+
+              <button
+                class="inline-flex items-center justify-center gap-3 rounded-full border border-[#8d4d4d]/20 bg-white px-8 py-4 font-headline text-sm italic text-[#8d4d4d] shadow-sm transition-all duration-300 hover:bg-[#8d4d4d]/5 hover:shadow-md"
+                id="refineButton"
+                type="button"
+              >
+                <span class="material-symbols-outlined text-lg"
+                  >magic_button</span
+                >
+                <span class="tracking-wide" id="refineButtonLabel"
+                  >AI Refine Layout</span
+                >
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <aside
+        class="workspace-sidebar static w-full border-t border-[#efeded]/20 bg-surface p-6 md:p-8 xl:fixed xl:right-0 xl:top-20 xl:h-[calc(100vh-80px)] xl:w-80 xl:overflow-y-auto xl:border-l xl:border-t-0"
+      >
+        <div class="space-y-10">
+          <section class="space-y-6">
+            <div class="flex items-center gap-3 text-primary">
+              <span class="material-symbols-outlined">text_fields</span>
+              <h4
+                class="text-sm font-label font-bold uppercase tracking-widest"
+              >
+                Typography
+              </h4>
+            </div>
+
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <label class="text-xs font-label text-on-surface-variant"
+                  >Font Family</label
+                >
+                <div class="relative">
+                  <select
+                    class="w-full appearance-none border-0 border-b border-outline-variant bg-transparent py-2 pr-8 font-headline italic focus:border-primary focus:ring-0"
+                    id="fontFamilySelect"
+                  >
+                    <option value="noto">Noto Serif</option>
+                    <option value="pingfang">PingFang SC</option>
+                    <option value="songti">Songti SC</option>
+                    <option value="kaiti">Kaiti SC</option>
+                    <option value="fangsong">STFangsong</option>
+                    <option value="yahei">Microsoft YaHei</option>
+                    <option value="playfair">Playfair Display</option>
+                    <option value="cormorant">Cormorant Garamond</option>
+                  </select>
+                  <span
+                    class="material-symbols-outlined pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-on-surface-variant"
+                    >expand_more</span
+                  >
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="flex justify-between">
+                  <label class="text-xs font-label text-on-surface-variant"
+                    >Font Size</label
+                  >
+                  <span
+                    class="text-xs font-bold text-primary"
+                    id="fontSizeValue"
+                    >24px</span
+                  >
+                </div>
+                <input
+                  class="w-full cursor-pointer appearance-none rounded-full bg-surface-container accent-primary"
+                  id="fontSizeRange"
+                  max="30"
+                  min="20"
+                  step="1"
+                  type="range"
+                  value="24"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section class="space-y-6">
+            <div class="flex items-center gap-3 text-primary">
+              <span class="material-symbols-outlined">image</span>
+              <h4
+                class="text-sm font-label font-bold uppercase tracking-widest"
+              >
+                Cover Style
+              </h4>
+            </div>
+
+            <div
+              class="template-picker max-h-[440px] space-y-3 overflow-y-auto pr-1"
+              id="coverTemplateList"
+            >
+              <button
+                class="template-option is-active flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="minimalist"
+                aria-pressed="true"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #ffffff 0%, #f2f2f0 100%),
+                      linear-gradient(
+                        90deg,
+                        rgba(24, 24, 27, 0.12) 0 1px,
+                        transparent 0
+                      );
+                    --template-thumb-ink: #27272a;
+                  "
+                >
+                  <span class="template-option-index">01</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >crop_square</span
+                  >
+                  <span class="template-option-label">Minimalist</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >极简主义风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Minimalist</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="bold-modern"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(
+                        135deg,
+                        #20175f 0%,
+                        #fe4c8d 58%,
+                        #ffd255 100%
+                      ),
+                      linear-gradient(
+                        45deg,
+                        rgba(255, 255, 255, 0.14) 0 12px,
+                        transparent 12px 24px
+                      );
+                    --template-thumb-ink: #fff9fb;
+                  "
+                >
+                  <span class="template-option-index">02</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >bolt</span
+                  >
+                  <span class="template-option-label">Bold Modern</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >大胆现代风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Bold Modern</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="elegant-vintage"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #f7f0df 0%, #e5d6bb 100%),
+                      radial-gradient(
+                        circle at center,
+                        rgba(118, 72, 44, 0.08) 0 1px,
+                        transparent 1px
+                      );
+                    --template-thumb-ink: #5b392b;
+                  "
+                >
+                  <span class="template-option-index">03</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >history_edu</span
+                  >
+                  <span class="template-option-label">Vintage</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >优雅复古风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Elegant Vintage</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="futuristic-tech"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #04111f 0%, #091f42 100%),
+                      repeating-linear-gradient(
+                        90deg,
+                        rgba(93, 215, 255, 0.24) 0 1px,
+                        transparent 1px 14px
+                      );
+                    --template-thumb-ink: #eefbff;
+                  "
+                >
+                  <span class="template-option-index">04</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >memory</span
+                  >
+                  <span class="template-option-label">Future Tech</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >未来科技风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Futuristic Tech</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="scandinavian"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #f8faf9 0%, #e6f0f1 100%),
+                      linear-gradient(
+                        135deg,
+                        rgba(180, 203, 217, 0.3) 0 30%,
+                        transparent 30% 100%
+                      );
+                    --template-thumb-ink: #36505a;
+                  "
+                >
+                  <span class="template-option-index">05</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >eco</span
+                  >
+                  <span class="template-option-label">Scandi</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >斯堪的纳维亚风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Scandinavian</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="art-deco"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #141212 0%, #332714 100%),
+                      radial-gradient(
+                        circle at center,
+                        rgba(212, 175, 55, 0.25) 0 1px,
+                        transparent 1px
+                      );
+                    --template-thumb-ink: #f7e6a4;
+                  "
+                >
+                  <span class="template-option-index">06</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >diamond</span
+                  >
+                  <span class="template-option-label">Art Deco</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >艺术装饰风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Art Deco</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="japanese-minimalism"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #f8f5ef 0%, #ebe4d7 100%),
+                      linear-gradient(
+                        120deg,
+                        transparent 0 68%,
+                        rgba(39, 39, 42, 0.12) 68% 70%,
+                        transparent 70%
+                      );
+                    --template-thumb-ink: #403a35;
+                  "
+                >
+                  <span class="template-option-index">07</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >spa</span
+                  >
+                  <span class="template-option-label">Wabi-Sabi</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >日式极简风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Japanese Minimalism</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="postmodern-deconstruction"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #fff5ef 0%, #ffe5f2 100%),
+                      linear-gradient(
+                        35deg,
+                        rgba(0, 0, 0, 0.16) 0 15%,
+                        transparent 15% 38%,
+                        rgba(109, 40, 217, 0.22) 38% 60%,
+                        transparent 60%
+                      );
+                    --template-thumb-ink: #2d1f40;
+                  "
+                >
+                  <span class="template-option-index">08</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >deblur</span
+                  >
+                  <span class="template-option-label">Deconstruction</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >后现代解构风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Postmodern Deconstruction</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="punk"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #090909 0%, #320d10 100%),
+                      repeating-linear-gradient(
+                        -25deg,
+                        rgba(255, 255, 255, 0.16) 0 6px,
+                        transparent 6px 18px
+                      );
+                    --template-thumb-ink: #fff6f6;
+                  "
+                >
+                  <span class="template-option-index">09</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >campaign</span
+                  >
+                  <span class="template-option-label">Punk</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >朋克风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Punk</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="british-rock"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #f7f3ee 0%, #ddd2c6 100%),
+                      linear-gradient(
+                        135deg,
+                        rgba(188, 45, 45, 0.28) 0 28%,
+                        transparent 28% 50%,
+                        rgba(44, 63, 118, 0.28) 50% 72%,
+                        transparent 72%
+                      );
+                    --template-thumb-ink: #2c2a34;
+                  "
+                >
+                  <span class="template-option-index">10</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >album</span
+                  >
+                  <span class="template-option-label">British Rock</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >英伦摇滚风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >British Rock</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="black-metal"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #040404 0%, #171717 100%),
+                      repeating-linear-gradient(
+                        90deg,
+                        rgba(255, 255, 255, 0.08) 0 1px,
+                        transparent 1px 12px
+                      );
+                    --template-thumb-ink: #ededed;
+                  "
+                >
+                  <span class="template-option-index">11</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >dark_mode</span
+                  >
+                  <span class="template-option-label">Black Metal</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >黑金属风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Black Metal</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="memphis-design"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(
+                        135deg,
+                        #fff06b 0%,
+                        #ff70a1 52%,
+                        #4fe9da 100%
+                      ),
+                      repeating-linear-gradient(
+                        45deg,
+                        rgba(17, 17, 17, 0.18) 0 5px,
+                        transparent 5px 16px
+                      );
+                    --template-thumb-ink: #271f39;
+                  "
+                >
+                  <span class="template-option-index">12</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >toys</span
+                  >
+                  <span class="template-option-label">Memphis</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >孟菲斯风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Memphis Design</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="cyberpunk"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #140b29 0%, #15285e 100%),
+                      radial-gradient(
+                        circle at 80% 20%,
+                        rgba(255, 61, 173, 0.45),
+                        transparent 20%
+                      ),
+                      repeating-linear-gradient(
+                        90deg,
+                        rgba(66, 224, 255, 0.2) 0 1px,
+                        transparent 1px 12px
+                      );
+                    --template-thumb-ink: #fbf4ff;
+                  "
+                >
+                  <span class="template-option-index">13</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >neurology</span
+                  >
+                  <span class="template-option-label">Cyberpunk</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >赛博朋克风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Cyberpunk</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="pop-art"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #fff17a 0%, #ffdb4a 100%),
+                      radial-gradient(
+                        circle at 24% 30%,
+                        rgba(244, 60, 60, 0.38) 0 1px,
+                        transparent 1px
+                      ),
+                      radial-gradient(
+                        circle at 70% 56%,
+                        rgba(27, 106, 255, 0.34) 0 1px,
+                        transparent 1px
+                      );
+                    --template-thumb-ink: #20223a;
+                  "
+                >
+                  <span class="template-option-index">14</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >palette</span
+                  >
+                  <span class="template-option-label">Pop Art</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >波普艺术风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Pop Art</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="deconstructed-swiss-style"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #ffffff 0%, #efefef 100%),
+                      linear-gradient(
+                        90deg,
+                        rgba(17, 17, 17, 0.12) 0 1px,
+                        transparent 1px 14px
+                      ),
+                      linear-gradient(
+                        155deg,
+                        transparent 0 56%,
+                        rgba(239, 68, 68, 0.28) 56% 72%,
+                        transparent 72%
+                      );
+                    --template-thumb-ink: #171717;
+                  "
+                >
+                  <span class="template-option-index">15</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >grid_view</span
+                  >
+                  <span class="template-option-label">Swiss Decon</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >瑞士国际主义风格的解构版</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Deconstructed Swiss Style</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="vaporwave-aesthetics"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(
+                        135deg,
+                        #ffb8dd 0%,
+                        #ab76ff 52%,
+                        #5adffd 100%
+                      ),
+                      linear-gradient(
+                        180deg,
+                        rgba(255, 255, 255, 0.16) 0 1px,
+                        transparent 1px 16px
+                      );
+                    --template-thumb-ink: #ffffff;
+                  "
+                >
+                  <span class="template-option-index">16</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >landscape</span
+                  >
+                  <span class="template-option-label">Vaporwave</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >蒸汽波美学</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Vaporwave Aesthetics</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="neo-expressionism"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #ffd8c2 0%, #f6a97e 100%),
+                      radial-gradient(
+                        circle at 22% 24%,
+                        rgba(16, 16, 16, 0.18),
+                        transparent 18%
+                      ),
+                      linear-gradient(
+                        135deg,
+                        rgba(244, 63, 94, 0.22) 0 30%,
+                        transparent 30% 100%
+                      );
+                    --template-thumb-ink: #4d2026;
+                  "
+                >
+                  <span class="template-option-index">17</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >brush</span
+                  >
+                  <span class="template-option-label">Expressionist</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >新表现主义风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Neo-Expressionism</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="extreme-minimalism"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #ffffff 0%, #fafafa 100%),
+                      linear-gradient(
+                        90deg,
+                        rgba(15, 23, 42, 0.08) 0 1px,
+                        transparent 1px 22px
+                      );
+                    --template-thumb-ink: #111827;
+                  "
+                >
+                  <span class="template-option-index">18</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >radio_button_unchecked</span
+                  >
+                  <span class="template-option-label">Extreme Minimal</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >极简主义的极端版本</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Extreme Minimalism</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="neo-futurism"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #f4f8ff 0%, #cfdceb 100%),
+                      radial-gradient(
+                        circle at 82% 18%,
+                        rgba(0, 120, 255, 0.35),
+                        transparent 18%
+                      );
+                    --template-thumb-ink: #17304d;
+                  "
+                >
+                  <span class="template-option-index">19</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >polyline</span
+                  >
+                  <span class="template-option-label">Neo-Futurism</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >新未来主义</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Neo-Futurism</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="surrealist-digital-collage"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #ffe1cf 0%, #d5e7fb 100%),
+                      radial-gradient(
+                        circle at 22% 22%,
+                        rgba(255, 144, 112, 0.42),
+                        transparent 18%
+                      ),
+                      radial-gradient(
+                        circle at 82% 28%,
+                        rgba(82, 92, 247, 0.34),
+                        transparent 16%
+                      );
+                    --template-thumb-ink: #2f3158;
+                  "
+                >
+                  <span class="template-option-index">20</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >auto_fix_high</span
+                  >
+                  <span class="template-option-label">Surreal Collage</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >超现实主义数字拼贴</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Surrealist Digital Collage</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="neo-baroque-digital"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #24131e 0%, #681e35 100%),
+                      radial-gradient(
+                        circle at 50% 18%,
+                        rgba(231, 193, 90, 0.4),
+                        transparent 18%
+                      );
+                    --template-thumb-ink: #fff0c4;
+                  "
+                >
+                  <span class="template-option-index">21</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >diamond</span
+                  >
+                  <span class="template-option-label">Neo-Baroque</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >新巴洛克数字风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Neo-Baroque Digital</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="liquid-digital-morphism"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(
+                        135deg,
+                        #7a43ff 0%,
+                        #3a6dff 52%,
+                        #5df0ff 100%
+                      ),
+                      radial-gradient(
+                        circle at 20% 22%,
+                        rgba(255, 255, 255, 0.26),
+                        transparent 20%
+                      );
+                    --template-thumb-ink: #ffffff;
+                  "
+                >
+                  <span class="template-option-index">22</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >water_drop</span
+                  >
+                  <span class="template-option-label">Liquid Morph</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >液态数字形态主义</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Liquid Digital Morphism</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="hypersensory-minimalism"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #ffffff 0%, #f4f5f6 100%),
+                      radial-gradient(
+                        circle at 30% 30%,
+                        rgba(148, 163, 184, 0.12) 0 1px,
+                        transparent 1px
+                      );
+                    --template-thumb-ink: #334155;
+                  "
+                >
+                  <span class="template-option-index">23</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >visibility</span
+                  >
+                  <span class="template-option-label">Hypersensory</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >超感官极简主义</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Hypersensory Minimalism</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="neo-expressionist-data-visualization"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #fff8f0 0%, #dbeafe 100%),
+                      linear-gradient(
+                        130deg,
+                        rgba(59, 130, 246, 0.24) 0 28%,
+                        transparent 28% 100%
+                      ),
+                      radial-gradient(
+                        circle at 78% 24%,
+                        rgba(239, 68, 68, 0.28),
+                        transparent 18%
+                      );
+                    --template-thumb-ink: #1f3058;
+                  "
+                >
+                  <span class="template-option-index">24</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >monitoring</span
+                  >
+                  <span class="template-option-label">Data Expression</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >新表现主义数据可视化</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Neo-Expressionist Data Visualization</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="victorian-style"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(180deg, #f3e7cf 0%, #dec8a2 100%),
+                      repeating-linear-gradient(
+                        45deg,
+                        rgba(126, 80, 50, 0.08) 0 8px,
+                        transparent 8px 20px
+                      );
+                    --template-thumb-ink: #5d3b26;
+                  "
+                >
+                  <span class="template-option-index">25</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >menu_book</span
+                  >
+                  <span class="template-option-label">Victorian</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >维多利亚风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Victorian Style</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="bauhaus"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #ffffff 0%, #efefef 100%),
+                      linear-gradient(
+                        135deg,
+                        rgba(239, 68, 68, 0.34) 0 24%,
+                        transparent 24% 52%,
+                        rgba(59, 130, 246, 0.32) 52% 74%,
+                        transparent 74% 100%
+                      ),
+                      radial-gradient(
+                        circle at 70% 24%,
+                        rgba(250, 204, 21, 0.34),
+                        transparent 18%
+                      );
+                    --template-thumb-ink: #111827;
+                  "
+                >
+                  <span class="template-option-index">26</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >category</span
+                  >
+                  <span class="template-option-label">Bauhaus</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >包豪斯风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Bauhaus</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="constructivism"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #ffffff 0%, #ededed 100%),
+                      linear-gradient(
+                        145deg,
+                        rgba(185, 28, 28, 0.92) 0 22%,
+                        transparent 22% 46%,
+                        rgba(17, 17, 17, 0.92) 46% 54%,
+                        transparent 54% 100%
+                      );
+                    --template-thumb-ink: #18181b;
+                  "
+                >
+                  <span class="template-option-index">27</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >architecture</span
+                  >
+                  <span class="template-option-label">Constructivism</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >构成主义风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Constructivism</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="memphis-design-2"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(
+                        135deg,
+                        #ff67a4 0%,
+                        #ffd94a 42%,
+                        #3fd8ff 100%
+                      ),
+                      repeating-linear-gradient(
+                        90deg,
+                        rgba(0, 0, 0, 0.16) 0 1px,
+                        transparent 1px 12px
+                      );
+                    --template-thumb-ink: #1b2443;
+                  "
+                >
+                  <span class="template-option-index">28</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >interactive_space</span
+                  >
+                  <span class="template-option-label">Memphis 2</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >孟菲斯风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >Memphis Design</span
+                  >
+                </span>
+              </button>
+              <button
+                class="template-option flex w-full items-center gap-4 rounded-2xl border border-outline-variant/15 bg-white/90 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_28px_rgba(141,77,77,0.08)]"
+                data-template-id="german-expressionism"
+                aria-pressed="false"
+                type="button"
+              >
+                <span
+                  class="template-option-thumb"
+                  style="
+                    --template-thumb-background:
+                      linear-gradient(135deg, #12182a 0%, #5b2327 100%),
+                      linear-gradient(
+                        135deg,
+                        rgba(245, 158, 11, 0.24) 0 18%,
+                        transparent 18% 100%
+                      );
+                    --template-thumb-ink: #fff1cb;
+                  "
+                >
+                  <span class="template-option-index">29</span>
+                  <span class="material-symbols-outlined template-option-icon"
+                    >theaters</span
+                  >
+                  <span class="template-option-label">German Exp.</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-on-surface"
+                    >德国表现主义风格</span
+                  >
+                  <span
+                    class="mt-1 block text-[11px] leading-relaxed text-on-surface-variant"
+                    >German Expressionism</span
+                  >
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <section class="space-y-6">
+            <div class="flex items-center gap-3 text-primary">
+              <span
+                class="material-symbols-outlined"
+                style="font-variation-settings: &quot;FILL&quot; 1"
+                >dashboard</span
+              >
+              <h4
+                class="text-sm font-label font-bold uppercase tracking-widest"
+              >
+                Body Layout
+              </h4>
+            </div>
+
+            <div class="space-y-3">
+              <button
+                class="layout-button group flex w-full items-center gap-4 rounded-xl border border-outline-variant/30 p-4 text-left transition-colors hover:bg-surface-container-low"
+                data-body-layout="minimal"
+                type="button"
+              >
+                <div
+                  class="flex h-16 w-12 flex-col gap-1 rounded bg-surface-container-high p-2"
+                >
+                  <div class="h-1 w-full rounded bg-primary/20"></div>
+                  <div class="h-1 w-2/3 rounded bg-primary/20"></div>
+                  <div class="mt-1 flex-1 rounded bg-primary/10"></div>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-on-surface">
+                    Minimalist Focus
+                  </p>
+                  <p class="text-[10px] text-on-surface-variant">
+                    Clean text-first layout
+                  </p>
+                </div>
+              </button>
+
+              <button
+                class="layout-button is-active flex w-full items-center gap-4 rounded-xl border border-primary bg-primary-container/10 p-4 text-left"
+                data-body-layout="magazine"
+                type="button"
+              >
+                <div
+                  class="flex h-16 w-12 flex-col overflow-hidden rounded bg-surface-container-high"
+                >
+                  <div class="flex-1 bg-primary/30"></div>
+                  <div class="space-y-1 p-2">
+                    <div class="h-1 w-full rounded bg-primary/20"></div>
+                    <div class="h-1 w-full rounded bg-primary/20"></div>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-on-surface">
+                    Magazine Split
+                  </p>
+                  <p class="text-[10px] text-on-surface-variant">
+                    Visual header with caption
+                  </p>
+                </div>
+              </button>
+
+              <button
+                class="layout-button group flex w-full items-center gap-4 rounded-xl border border-outline-variant/30 p-4 text-left transition-colors hover:bg-surface-container-low"
+                data-body-layout="grid"
+                type="button"
+              >
+                <div
+                  class="flex h-16 w-12 flex-col gap-2 rounded bg-surface-container-high p-2"
+                >
+                  <div class="grid flex-1 grid-cols-2 gap-1">
+                    <div class="rounded bg-primary/20"></div>
+                    <div class="rounded bg-primary/20"></div>
+                  </div>
+                  <div class="h-1 w-full rounded bg-primary/20"></div>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-on-surface">Double Grid</p>
+                  <p class="text-[10px] text-on-surface-variant">
+                    Dual imagery showcase
+                  </p>
+                </div>
+              </button>
+            </div>
+          </section>
+        </div>
+      </aside>
+    </section>
+
+    <section class="app-view hidden" id="exportView">
+      <main
+        class="relative min-h-screen overflow-hidden px-4 pb-12 pt-32 sm:px-6 sm:pt-24 lg:px-10"
+      >
+        <div
+          class="mx-auto flex max-w-screen-2xl flex-col gap-10 lg:flex-row lg:gap-12"
+        >
+          <section class="flex-1 space-y-10">
+            <header class="space-y-2">
+              <h1
+                class="font-headline text-[clamp(2.75rem,12vw,4.5rem)] font-bold tracking-tight text-on-surface"
+              >
+                Export &amp; Preview
+              </h1>
+              <p class="text-lg font-medium text-on-surface-variant">
+                Finalize the current workspace pages for download.
+              </p>
+            </header>
+
+            <div
+              class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+              id="exportCardGrid"
+            ></div>
+
+            <div
+              class="flex items-center gap-4 border-t border-outline-variant/10 py-8"
+            >
+              <span
+                class="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400"
+                >Layout Preset:</span
+              >
+              <span
+                class="rounded-full bg-surface-container px-3 py-1 text-[10px] font-semibold text-rose-900"
+                id="layoutPresetLabel"
+                >Vertical Story</span
+              >
+            </div>
+          </section>
+
+          <aside class="w-full lg:w-80 lg:shrink-0">
+            <div class="space-y-8 lg:sticky lg:top-24">
+              <div
+                class="rounded-xl border border-outline-variant/5 bg-surface-container-lowest p-8 shadow-[0_12px_40px_rgba(141,77,77,0.05)]"
+              >
+                <div class="space-y-6">
+                  <div class="space-y-4">
+                    <label
+                      class="block text-[10px] font-bold uppercase tracking-widest text-stone-400"
+                      >Format Selection</label
+                    >
+                    <div class="space-y-3">
+                      <button
+                        class="export-choice is-active flex w-full items-center justify-between rounded-xl border border-primary/20 px-4 py-3 text-sm font-semibold"
+                        data-format="jpeg"
+                        type="button"
+                      >
+                        <span>JPEG (High Quality)</span>
+                        <span
+                          class="material-symbols-outlined text-sm"
+                          style="font-variation-settings: &quot;FILL&quot; 1"
+                          >check_circle</span
+                        >
+                      </button>
+                      <button
+                        class="export-choice flex w-full items-center justify-between rounded-xl border border-outline-variant/10 px-4 py-3 text-sm font-medium text-stone-600"
+                        data-format="png"
+                        type="button"
+                      >
+                        <span>PNG (Lossless)</span>
+                      </button>
+                      <button
+                        class="export-choice flex w-full items-center justify-between rounded-xl border border-outline-variant/10 px-4 py-3 text-sm font-medium text-stone-600"
+                        data-format="pdf"
+                        type="button"
+                      >
+                        <span>PDF (Full Deck)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="space-y-4">
+                    <label
+                      class="block text-[10px] font-bold uppercase tracking-widest text-stone-400"
+                      >Size Presets</label
+                    >
+                    <select
+                      class="w-full rounded-lg border-0 border-b border-outline-variant/20 bg-surface-container/50 py-3 text-sm font-medium focus:ring-primary/20"
+                      id="sizePresetSelect"
+                    >
+                      <option value="3:4">Xiaohongshu Standard (3:4)</option>
+                      <option value="1:1">Insta-Square (1:1)</option>
+                      <option value="9:16">Story Vertical (9:16)</option>
+                    </select>
+                  </div>
+
+                  <div
+                    class="flex justify-between border-t border-outline-variant/10 pt-4 text-[11px] font-bold uppercase tracking-tighter text-stone-400"
+                  >
+                    <span id="selectedCountLabel">3 Pages Selected</span>
+                    <span id="estimatedSizeLabel">Est. Size: 2.4MB</span>
+                  </div>
+
+                  <div class="space-y-4 pt-2">
+                    <button
+                      class="w-full rounded-full bg-gradient-to-br from-rose-800 to-rose-400 py-4 text-sm font-bold text-white shadow-lg shadow-rose-900/10 transition-all hover:scale-[0.99]"
+                      id="downloadButton"
+                      type="button"
+                    >
+                      Download All Items
+                    </button>
+                    <div class="flex gap-2">
+                      <button
+                        class="flex flex-1 items-center justify-center gap-2 rounded-full border border-outline-variant/20 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-600 transition-all hover:bg-stone-50"
+                        id="shareButton"
+                        type="button"
+                      >
+                        <span class="material-symbols-outlined text-sm"
+                          >share</span
+                        >
+                        Share
+                      </button>
+                      <button
+                        class="flex h-12 w-12 items-center justify-center rounded-full border border-outline-variant/20 text-stone-600 transition-all hover:bg-stone-50"
+                        id="moreButton"
+                        type="button"
+                      >
+                        <span class="material-symbols-outlined"
+                          >more_horiz</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="px-2 lg:px-6">
+                <label
+                  class="mb-4 block text-[10px] font-bold uppercase tracking-widest text-stone-400"
+                  >Direct Send</label
+                >
+                <div class="flex gap-4">
+                  <button
+                    class="grid h-10 w-10 place-items-center rounded-full bg-surface-container-highest text-stone-500 shadow-sm transition-colors hover:text-rose-600"
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined text-xl"
+                      >google_chat</span
+                    >
+                  </button>
+                  <button
+                    class="grid h-10 w-10 place-items-center rounded-full bg-surface-container-highest text-stone-500 shadow-sm transition-colors hover:text-rose-600"
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined text-xl"
+                      >favorite</span
+                    >
+                  </button>
+                  <button
+                    class="grid h-10 w-10 place-items-center rounded-full bg-surface-container-highest text-stone-500 shadow-sm transition-colors hover:text-rose-600"
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined text-xl"
+                      >photo_camera</span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </section>
+
+    <div
+      class="pointer-events-none fixed bottom-6 left-1/2 z-[60] w-[calc(100%-2rem)] max-w-fit -translate-x-1/2 translate-y-4 rounded-full bg-secondary-container px-6 py-3 text-sm font-bold uppercase tracking-widest text-on-secondary-container opacity-0 shadow-2xl transition-all duration-500"
+      id="toast"
+    >
+      Workspace updated
+    </div>
+
+    <div
+      class="pointer-events-none fixed bottom-6 left-1/2 z-[60] w-[calc(100%-2rem)] max-w-fit -translate-x-1/2 translate-y-4 rounded-full bg-secondary-container px-6 py-3 text-sm font-bold uppercase tracking-widest text-on-secondary-container opacity-0 shadow-2xl transition-all duration-500"
+      id="exportToast"
+    >
+      Export queued for download
+    </div>
+
+    <script src="./node_modules/html-to-image/dist/html-to-image.js"></script>
+    <script src="./node_modules/fflate/umd/index.js"></script>
+    <script src="./script.js?v=20260401-cover-copy-ai-2" type="module"></script>
+  </body>
+</html>

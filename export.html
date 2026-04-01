@@ -1,0 +1,259 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Export &amp; Preview | Lumière Atelier</title>
+    <link href="./favicon.svg" rel="icon" type="image/svg+xml" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <link href="./tailwind.generated.css" rel="stylesheet" />
+    <link href="./styles.css" rel="stylesheet" />
+  </head>
+  <body
+    class="bg-surface text-on-surface font-body antialiased selection:bg-primary-container selection:text-on-primary"
+  >
+    <div class="pointer-events-none fixed inset-0 vellum-grid opacity-20"></div>
+
+    <nav
+      class="fixed top-0 z-50 w-full bg-stone-50/80 backdrop-blur-xl shadow-[0_12px_40px_rgba(141,77,77,0.08)]"
+    >
+      <div
+        class="mx-auto flex w-full max-w-screen-2xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:gap-6 sm:px-6 lg:px-10"
+      >
+        <div class="flex min-w-0 items-center gap-5 lg:gap-12">
+          <a
+            class="min-w-0 font-headline text-xl italic text-rose-900 sm:text-2xl"
+            href="./export.html"
+            >Lumière Atelier</a
+          >
+          <div class="flex items-center gap-5 text-sm font-medium sm:gap-8">
+            <a
+              class="text-stone-500 transition-colors hover:text-rose-700"
+              href="./index.html"
+              >Workspace</a
+            >
+            <a
+              class="text-stone-500 transition-colors hover:text-rose-700"
+              href="./history.html"
+              >History</a
+            >
+            <span
+              class="cursor-default border-b-2 border-rose-400 pb-1 text-rose-900"
+              >Export</span
+            >
+          </div>
+        </div>
+
+        <div class="flex shrink-0 items-center gap-2 sm:gap-4">
+          <a
+            class="rounded-full px-4 py-2 text-sm font-medium text-rose-900 transition-all hover:bg-stone-200/50 sm:px-6"
+            href="./index.html"
+          >
+            Preview
+          </a>
+          <button
+            class="rounded-full bg-gradient-to-br from-rose-800 to-rose-400 px-5 py-2 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:scale-[0.98] sm:px-6"
+            id="topExportButton"
+            type="button"
+          >
+            Export
+          </button>
+          <div
+            class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-outline-variant/20 bg-surface-container"
+          >
+            <img
+              alt="User profile"
+              class="h-full w-full object-cover"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoz9ZPdj8U6bzvOjcO6LxmucFCONYpHYw8O5HV-MKHUIXr561zMA-6k0O9rWUdBvoj-6PtK04dabBm3640U1mcPj7TqNA2IA-VmKDizqCwV0RlbhlW2O0jf3u37QT9AzkZEX9k7ZEknByIOBmKA5vcdDN5ruEag7p6NkS6Guj2xARH5rpUknoje6gkgU7MCfBDBxl8ABIvjcVb2WLpNmbXsGu0Oe4W9QkYs3KcLslhuWs5wuhBOPb51v1h60LbHZucN1V4GI1U3BM3"
+            />
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main
+      class="relative min-h-screen overflow-hidden px-4 pb-12 pt-32 sm:px-6 sm:pt-24 lg:px-10"
+    >
+      <div
+        class="mx-auto flex max-w-screen-2xl flex-col gap-10 lg:flex-row lg:gap-12"
+      >
+        <section class="flex-1 space-y-10">
+          <header class="space-y-2">
+            <h1
+              class="font-headline text-[clamp(2.75rem,12vw,4.5rem)] font-bold tracking-tight text-on-surface"
+            >
+              Export &amp; Preview
+            </h1>
+            <p class="text-lg font-medium text-on-surface-variant">
+              Finalize your creation for the world to see.
+            </p>
+          </header>
+
+          <div
+            class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+            id="exportCardGrid"
+          ></div>
+
+          <div
+            class="flex items-center gap-4 border-t border-outline-variant/10 py-8"
+          >
+            <span
+              class="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400"
+              >Layout Preset:</span
+            >
+            <span
+              class="rounded-full bg-surface-container px-3 py-1 text-[10px] font-semibold text-rose-900"
+              id="layoutPresetLabel"
+              >Vertical Story</span
+            >
+          </div>
+        </section>
+
+        <aside class="w-full lg:w-80 lg:shrink-0">
+          <div class="space-y-8 lg:sticky lg:top-24">
+            <div
+              class="rounded-xl border border-outline-variant/5 bg-surface-container-lowest p-8 shadow-[0_12px_40px_rgba(141,77,77,0.05)]"
+            >
+              <div class="space-y-6">
+                <div class="space-y-4">
+                  <label
+                    class="block text-[10px] font-bold uppercase tracking-widest text-stone-400"
+                    >Format Selection</label
+                  >
+                  <div class="space-y-3">
+                    <button
+                      class="export-choice is-active flex w-full items-center justify-between rounded-xl border border-primary/20 px-4 py-3 text-sm font-semibold"
+                      data-format="jpeg"
+                      type="button"
+                    >
+                      <span>JPEG (High Quality)</span>
+                      <span
+                        class="material-symbols-outlined text-sm"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >check_circle</span
+                      >
+                    </button>
+                    <button
+                      class="export-choice flex w-full items-center justify-between rounded-xl border border-outline-variant/10 px-4 py-3 text-sm font-medium text-stone-600"
+                      data-format="png"
+                      type="button"
+                    >
+                      <span>PNG (Lossless)</span>
+                    </button>
+                    <button
+                      class="export-choice flex w-full items-center justify-between rounded-xl border border-outline-variant/10 px-4 py-3 text-sm font-medium text-stone-600"
+                      data-format="pdf"
+                      type="button"
+                    >
+                      <span>PDF (Full Deck)</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <label
+                    class="block text-[10px] font-bold uppercase tracking-widest text-stone-400"
+                    >Size Presets</label
+                  >
+                  <select
+                    class="w-full rounded-lg border-0 border-b border-outline-variant/20 bg-surface-container/50 py-3 text-sm font-medium focus:ring-primary/20"
+                    id="sizePresetSelect"
+                  >
+                    <option value="3:4">Xiaohongshu Standard (3:4)</option>
+                    <option value="1:1">Insta-Square (1:1)</option>
+                    <option value="9:16">Story Vertical (9:16)</option>
+                  </select>
+                </div>
+
+                <div
+                  class="flex justify-between border-t border-outline-variant/10 pt-4 text-[11px] font-bold uppercase tracking-tighter text-stone-400"
+                >
+                  <span id="selectedCountLabel">3 Pages Selected</span>
+                  <span id="estimatedSizeLabel">Est. Size: 2.4MB</span>
+                </div>
+
+                <div class="space-y-4 pt-2">
+                  <button
+                    class="w-full rounded-full bg-gradient-to-br from-rose-800 to-rose-400 py-4 text-sm font-bold text-white shadow-lg shadow-rose-900/10 transition-all hover:scale-[0.99]"
+                    id="downloadButton"
+                    type="button"
+                  >
+                    Download All Items
+                  </button>
+                  <div class="flex gap-2">
+                    <button
+                      class="flex flex-1 items-center justify-center gap-2 rounded-full border border-outline-variant/20 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-600 transition-all hover:bg-stone-50"
+                      id="shareButton"
+                      type="button"
+                    >
+                      <span class="material-symbols-outlined text-sm"
+                        >share</span
+                      >
+                      Share
+                    </button>
+                    <button
+                      class="flex h-12 w-12 items-center justify-center rounded-full border border-outline-variant/20 text-stone-600 transition-all hover:bg-stone-50"
+                      id="moreButton"
+                      type="button"
+                    >
+                      <span class="material-symbols-outlined">more_horiz</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-2 lg:px-6">
+              <label
+                class="mb-4 block text-[10px] font-bold uppercase tracking-widest text-stone-400"
+                >Direct Send</label
+              >
+              <div class="flex gap-4">
+                <button
+                  class="grid h-10 w-10 place-items-center rounded-full bg-surface-container-highest text-stone-500 shadow-sm transition-colors hover:text-rose-600"
+                  type="button"
+                >
+                  <span class="material-symbols-outlined text-xl"
+                    >google_chat</span
+                  >
+                </button>
+                <button
+                  class="grid h-10 w-10 place-items-center rounded-full bg-surface-container-highest text-stone-500 shadow-sm transition-colors hover:text-rose-600"
+                  type="button"
+                >
+                  <span class="material-symbols-outlined text-xl"
+                    >favorite</span
+                  >
+                </button>
+                <button
+                  class="grid h-10 w-10 place-items-center rounded-full bg-surface-container-highest text-stone-500 shadow-sm transition-colors hover:text-rose-600"
+                  type="button"
+                >
+                  <span class="material-symbols-outlined text-xl"
+                    >photo_camera</span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <div
+      class="pointer-events-none fixed bottom-6 left-1/2 z-[60] w-[calc(100%-2rem)] max-w-fit -translate-x-1/2 translate-y-4 rounded-full bg-secondary-container px-6 py-3 text-sm font-bold uppercase tracking-widest text-on-secondary-container opacity-0 shadow-2xl transition-all duration-500"
+      id="exportToast"
+    >
+      Export queued for download
+    </div>
+
+    <script src="./export.js"></script>
+  </body>
+</html>
