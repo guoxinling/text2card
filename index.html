@@ -309,6 +309,61 @@ disappear as your ideas take shape...</textarea
 
           <section class="space-y-6">
             <div class="flex items-center gap-3 text-primary">
+              <span class="material-symbols-outlined">edit_note</span>
+              <h4
+                class="text-sm font-label font-bold uppercase tracking-widest"
+              >
+                Cover Copy
+              </h4>
+            </div>
+
+            <div class="cover-copy-panel space-y-4">
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-label uppercase tracking-[0.18em] text-on-surface-variant/80"
+                  for="coverTitleInput"
+                  >封面标题</label
+                >
+                <input
+                  class="cover-copy-input"
+                  id="coverTitleInput"
+                  maxlength="36"
+                  placeholder="AI 标题会出现在这里，你也可以手动修改"
+                  type="text"
+                />
+              </div>
+
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-label uppercase tracking-[0.18em] text-on-surface-variant/80"
+                  for="coverHighlightsInput"
+                  >封面要点</label
+                >
+                <textarea
+                  class="cover-copy-input cover-copy-textarea"
+                  id="coverHighlightsInput"
+                  placeholder="每行一个要点，建议 2 到 5 条"
+                  rows="5"
+                ></textarea>
+                <p
+                  class="text-[11px] leading-relaxed text-on-surface-variant/70"
+                >
+                  一行一个要点，正文标题会和这里的封面标题保持同步。
+                </p>
+              </div>
+
+              <button
+                class="cover-copy-reset"
+                id="resetCoverCopyButton"
+                type="button"
+              >
+                使用 AI 建议
+              </button>
+            </div>
+          </section>
+
+          <section class="space-y-6">
+            <div class="flex items-center gap-3 text-primary">
               <span class="material-symbols-outlined">image</span>
               <h4
                 class="text-sm font-label font-bold uppercase tracking-widest"
