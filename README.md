@@ -1,6 +1,6 @@
 # Xiaohongshu Layout Tool
 
-Responsive web prototype for turning long-form text into Xiaohongshu-friendly image pages.
+Responsive web app for turning long-form text into Xiaohongshu-friendly image pages.
 
 ## Current Scope
 
@@ -12,13 +12,15 @@ Responsive web prototype for turning long-form text into Xiaohongshu-friendly im
 ## Project Structure
 
 ```text
-index.html      # Workspace view entry
-export.html     # Export view entry
-script.js       # Workspace logic
-export.js       # Export logic
-styles.css      # Shared styles
-server.js       # Node server + AI proxy
-docs/           # Product and engineering docs
+index.html        # Main single-page app entry
+script.js         # Thin browser entry that boots the app
+src/              # Modular frontend logic
+server.js         # Node server + AI proxy
+styles.css        # Shared styles
+prompts/          # Editable AI prompt files
+docs/             # Product and engineering docs
+export.html       # Legacy / reference page
+history.html      # Legacy / reference page
 ```
 
 ## Development
@@ -40,7 +42,13 @@ npm install
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000).
+
+Important:
+
+- Do not open `index.html` with `file://`
+- Browser-side modules are blocked under `file://`, so the app will look broken
+- Always run the Node server first, then open `http://127.0.0.1:3000`
 
 ### Run checks
 
@@ -69,6 +77,31 @@ Rules:
 - Only read provider keys on the server
 - Keep `.env.local` local to your machine
 - Rotate any key that was pasted into chat, screenshots, or logs
+
+## npm and CI
+
+This project intentionally pins the npm registry to the official source via [`.npmrc`](/Users/guoxl/Documents/Playground/xiaohongshu-layout-prototype/.npmrc).
+
+Why this matters:
+
+- GitHub Actions installs dependencies from `package-lock.json`
+- If the lockfile is generated from a mirror such as `cnpmjs`, CI can fail during install
+- The workflow uses `npm ci` for deterministic installs
+
+Rules:
+
+- Keep the registry on `https://registry.npmjs.org/`
+- If `package-lock.json` ever contains `cnpmjs` or other mirror URLs, regenerate it before pushing
+- Prefer `npm ci` in CI and `npm install` only when intentionally updating dependencies
+
+Quick recovery steps if CI fails during install:
+
+```bash
+npm config set registry https://registry.npmjs.org/
+rm -rf node_modules package-lock.json
+npm install
+npm run check
+```
 
 ## Git Workflow
 
