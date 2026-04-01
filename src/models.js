@@ -86,6 +86,16 @@ export function sanitizeCoverHighlights(items, cjk) {
   return deduped;
 }
 
+export function parseCoverHighlightsText(text, cjk) {
+  return sanitizeCoverHighlights(
+    String(text || "")
+      .split(/\r?\n+/)
+      .map((item) => item.trim())
+      .filter(Boolean),
+    cjk
+  );
+}
+
 function getDefaultCoverHighlights(cjk) {
   return cjk
     ? ["提炼核心主题", "封面卖点更清晰", "正文标题自动同步"]
@@ -296,7 +306,17 @@ export function parseEditorText(text) {
   });
   const activeCoverCopy =
     state.coverCopyKey === normalized ? state.coverCopy : null;
+  const manualCoverCopy =
+    state.manualCoverCopyKey === normalized ? state.manualCoverCopy : null;
+  const manualCoverTitle = sanitizeCoverTitleText(
+    manualCoverCopy?.titleText || ""
+  );
+  const manualCoverHighlights = parseCoverHighlightsText(
+    manualCoverCopy?.highlightsText || "",
+    cjk
+  );
   const coverTitle =
+    manualCoverTitle ||
     sanitizeCoverTitleText(activeCoverCopy?.coverTitle) ||
     fallbackCoverCopy.coverTitle;
   const coverHighlights = sanitizeCoverHighlights(
@@ -307,11 +327,29 @@ export function parseEditorText(text) {
   return {
     coverTitle,
     coverHighlights:
-      coverHighlights.length >= 2
-        ? coverHighlights
-        : fallbackCoverCopy.coverHighlights,
+      manualCoverHighlights.length >= 2
+        ? manualCoverHighlights
+        : coverHighlights.length >= 2
+          ? coverHighlights
+          : fallbackCoverCopy.coverHighlights,
     bodyTitle: coverTitle,
     bodySegments,
     isCjk: cjk,
+  };
+}
+
+export function getEditableCoverCopy(parsed, rawInputText = readInputText()) {
+  const cjk = parsed?.isCjk ?? isCjkText(rawInputText);
+  const manualCoverCopy =
+    state.manualCoverCopyKey === rawInputText ? state.manualCoverCopy : null;
+
+  return {
+    titleText: manualCoverCopy?.titleText ?? parsed.coverTitle ?? "",
+    highlightsText:
+      manualCoverCopy?.highlightsText ??
+      (Array.isArray(parsed.coverHighlights)
+        ? parsed.coverHighlights.join("\n")
+        : ""),
+    cjk,
   };
 }

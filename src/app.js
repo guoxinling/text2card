@@ -8,6 +8,7 @@ import {
   state,
 } from "./runtime.js";
 import {
+  getEditableCoverCopy,
   parseEditorText,
   readInputText,
   renderCoverHighlights,
@@ -78,6 +79,46 @@ function renderAppView() {
 function invalidateCoverCopyForCurrentInput() {
   state.coverCopy = null;
   state.coverCopyKey = "";
+  state.manualCoverCopy = null;
+  state.manualCoverCopyKey = "";
+}
+
+function syncCoverCopyEditor(parsed) {
+  const editable = getEditableCoverCopy(parsed, readInputText());
+
+  if (
+    document.activeElement !== elements.coverTitleInput ||
+    elements.coverTitleInput.value !== editable.titleText
+  ) {
+    elements.coverTitleInput.value = editable.titleText;
+  }
+
+  if (
+    document.activeElement !== elements.coverHighlightsInput ||
+    elements.coverHighlightsInput.value !== editable.highlightsText
+  ) {
+    elements.coverHighlightsInput.value = editable.highlightsText;
+  }
+}
+
+function applyManualCoverCopyFromInputs() {
+  const cacheKey = readInputText();
+  state.manualCoverCopy = {
+    titleText: elements.coverTitleInput.value,
+    highlightsText: elements.coverHighlightsInput.value,
+  };
+  state.manualCoverCopyKey = cacheKey;
+  rerenderFromInput();
+}
+
+function resetManualCoverCopy() {
+  state.manualCoverCopy = null;
+  state.manualCoverCopyKey = "";
+  rerenderFromInput();
+
+  if (!state.coverCopyKey) {
+    scheduleCoverCopyGeneration({ immediate: true });
+  }
 }
 
 function renderDocument(parsed) {
@@ -86,6 +127,7 @@ function renderDocument(parsed) {
 
   elements.coverTitle.textContent = parsed.coverTitle;
   renderCoverHighlights(parsed.coverHighlights);
+  syncCoverCopyEditor(parsed);
   applyCoverPreviewTemplate(activeTemplate);
 
   const showCover = state.previewMode === "cover";
@@ -323,6 +365,18 @@ function bindEvents() {
     invalidateCoverCopyForCurrentInput();
     rerenderFromInput();
     scheduleCoverCopyGeneration();
+  });
+
+  elements.coverTitleInput.addEventListener("input", () => {
+    applyManualCoverCopyFromInputs();
+  });
+
+  elements.coverHighlightsInput.addEventListener("input", () => {
+    applyManualCoverCopyFromInputs();
+  });
+
+  elements.resetCoverCopyButton.addEventListener("click", () => {
+    resetManualCoverCopy();
   });
 
   elements.fontFamilySelect.addEventListener("change", (event) => {
