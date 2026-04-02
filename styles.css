@@ -265,6 +265,13 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
+@media (min-width: 1280px) {
+  #workspaceView {
+    min-height: 100vh;
+    padding-top: 6rem;
+  }
+}
+
 .app-nav-link {
   border-color: transparent;
 }
@@ -613,6 +620,11 @@ body {
   display: none !important;
 }
 
+.preview-card-body[data-script="cjk"] .preview-page-paragraph,
+.preview-card-body[data-script="cjk"] .preview-page-quote {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
 .preview-card-body[data-script="cjk"] .body-paragraph-lead::first-letter,
 .preview-card-body[data-script="cjk"]
   .preview-page-paragraph-lead::first-letter {

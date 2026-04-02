@@ -87,6 +87,14 @@ export function getBodyTheme(template) {
   };
 }
 
+function getEffectiveBodyLayout(parsed) {
+  if (parsed?.isCjk && state.bodyLayout === "grid") {
+    return "magazine";
+  }
+
+  return state.bodyLayout;
+}
+
 function applyTemplateThemeToCard(card, template) {
   const theme = getTemplateTheme(template.id);
   card.style.setProperty("--cover-background", theme.coverBackground);
@@ -359,7 +367,7 @@ function getPreviewCardWidth() {
 function applyBodyCardStyles(card, parsed) {
   const fontFamily = getActiveFontFamily();
   const activeTemplate = getActiveTemplate();
-  card.dataset.bodyLayout = state.bodyLayout;
+  card.dataset.bodyLayout = getEffectiveBodyLayout(parsed);
   card.dataset.script = parsed.isCjk ? "cjk" : "latin";
   card.style.fontFamily = fontFamily;
   card.style.fontSize = `${getBodyTextSize()}px`;
