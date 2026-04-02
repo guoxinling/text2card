@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: text2card
+    runtime: node
+    plan: free
+    autoDeployTrigger: checksPass
+    healthCheckPath: /api/health
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: AI_PROVIDER
+        value: deepseek
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
+      - key: DEEPSEEK_API_KEY
+        sync: false

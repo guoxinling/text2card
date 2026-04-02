@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "npm run styles:build",
     "start": "node server.js",
     "dev": "node --watch server.js",
     "styles:build": "tailwindcss -i ./tailwind.input.css -o ./tailwind.generated.css --minify",
@@ -12,6 +13,10 @@
     "format:check": "prettier --check .",
     "syntax": "node --check server.js && node --check script.js && node --check export.js",
     "check": "npm run lint && npm run format:check && npm run syntax"
+  },
+  "engines": {
+    "node": "22.x",
+    "npm": "10.x"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
