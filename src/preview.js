@@ -1,6 +1,8 @@
 import {
   elements,
   getActiveFontFamily,
+  getCoverHighlightsSize,
+  getCoverTitleSize,
   getBodyTextSize,
   getBodyTitleSize,
   MAX_PAGE_GUARD,
@@ -160,6 +162,59 @@ function createTemplateOptionButton(template) {
   return button;
 }
 
+function syncTemplateOptionButton(button, template) {
+  const theme = getTemplateTheme(template.id);
+  button.dataset.templateId = template.id;
+
+  const thumb = button.querySelector(".template-option-thumb");
+  const index = button.querySelector(".template-option-index");
+  const icon = button.querySelector(".template-option-icon");
+  const shortLabel = button.querySelector(".template-option-label");
+  const copy = button.querySelector(".min-w-0.flex-1");
+  let name = copy?.children?.[0] ?? null;
+  let subtitle = copy?.children?.[1] ?? null;
+
+  if (thumb) {
+    thumb.style.setProperty(
+      "--template-thumb-background",
+      theme.thumbBackground
+    );
+    thumb.style.setProperty("--template-thumb-ink", theme.thumbInk);
+  }
+
+  if (index) {
+    index.textContent = String(template.index).padStart(2, "0");
+  }
+
+  if (icon) {
+    icon.textContent = template.badgeIcon;
+  }
+
+  if (shortLabel) {
+    shortLabel.textContent = template.shortLabel;
+  }
+
+  if (!copy) {
+    return;
+  }
+
+  if (!name) {
+    name = document.createElement("span");
+    name.className = "block text-sm font-semibold text-on-surface";
+    copy.append(name);
+  }
+
+  if (!subtitle) {
+    subtitle = document.createElement("span");
+    subtitle.className =
+      "mt-1 block text-[11px] leading-relaxed text-on-surface-variant";
+    copy.append(subtitle);
+  }
+
+  name.textContent = template.name;
+  subtitle.textContent = template.en;
+}
+
 function syncTemplatePickerSelection() {
   elements.coverTemplateList
     .querySelectorAll("[data-template-id]")
@@ -168,6 +223,45 @@ function syncTemplatePickerSelection() {
       button.classList.toggle("is-active", active);
       button.setAttribute("aria-pressed", String(active));
     });
+}
+
+function renderCurrentTemplateSummary() {
+  const template = getActiveTemplate();
+  const theme = getTemplateTheme(template.id);
+
+  elements.currentTemplateThumb.style.setProperty(
+    "--template-thumb-background",
+    theme.thumbBackground
+  );
+  elements.currentTemplateThumb.style.setProperty(
+    "--template-thumb-ink",
+    theme.thumbInk
+  );
+  elements.currentTemplateIndex.textContent = String(template.index).padStart(
+    2,
+    "0"
+  );
+  elements.currentTemplateIcon.textContent = template.badgeIcon;
+  elements.currentTemplateShortLabel.textContent = template.shortLabel;
+  elements.currentTemplateName.textContent = template.name;
+  elements.currentTemplateSubtitle.textContent = template.en;
+  elements.templatePickerToggle?.classList.toggle(
+    "is-open",
+    state.isTemplatePickerOpen
+  );
+  elements.templatePickerToggle?.setAttribute(
+    "aria-expanded",
+    String(state.isTemplatePickerOpen)
+  );
+  if (elements.templatePickerToggleLabel) {
+    elements.templatePickerToggleLabel.textContent = state.isTemplatePickerOpen
+      ? "收起模板"
+      : "更换模板";
+  }
+  elements.templatePickerPanel?.classList.toggle(
+    "hidden",
+    !state.isTemplatePickerOpen
+  );
 }
 
 export function renderTemplatePicker() {
@@ -184,11 +278,21 @@ export function renderTemplatePicker() {
       ...CARD_TEMPLATES.map((template) => createTemplateOptionButton(template))
     );
     syncTemplatePickerSelection();
+    renderCurrentTemplateSummary();
     elements.coverTemplateList.scrollTop = currentScrollTop;
     return;
   }
 
+  existingButtons.forEach((button, index) => {
+    const template = CARD_TEMPLATES[index];
+    if (!template) {
+      return;
+    }
+    syncTemplateOptionButton(button, template);
+  });
+
   syncTemplatePickerSelection();
+  renderCurrentTemplateSummary();
 }
 
 export function applyCoverPreviewTemplate(template) {
@@ -509,10 +613,17 @@ export function updateBodyPaginationUi(pages) {
 export function renderTypography() {
   const fontFamily = getActiveFontFamily();
   elements.coverTitle.style.fontFamily = fontFamily;
-  elements.coverTitle.style.fontSize = `${state.fontSize}px`;
+  elements.coverTitle.style.fontSize = `${getCoverTitleSize()}px`;
   elements.coverHighlights.style.fontFamily = fontFamily;
+  elements.coverHighlights.style.fontSize = `${getCoverHighlightsSize()}px`;
   elements.editorInput.style.fontFamily = fontFamily;
-  elements.fontSizeValue.textContent = `${state.fontSize}px`;
   elements.fontFamilySelect.value = state.fontFamily;
-  elements.fontSizeRange.value = String(state.fontSize);
+  elements.coverTitleSizeValue.textContent = `${state.coverTitleSize}px`;
+  elements.coverTitleSizeRange.value = String(state.coverTitleSize);
+  elements.coverHighlightsSizeValue.textContent = `${state.coverHighlightsSize}px`;
+  elements.coverHighlightsSizeRange.value = String(state.coverHighlightsSize);
+  elements.bodyTitleSizeValue.textContent = `${state.bodyTitleSize}px`;
+  elements.bodyTitleSizeRange.value = String(state.bodyTitleSize);
+  elements.bodyTextSizeValue.textContent = `${state.bodyTextSize}px`;
+  elements.bodyTextSizeRange.value = String(state.bodyTextSize);
 }

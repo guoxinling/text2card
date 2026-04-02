@@ -3,7 +3,6 @@ import {
   $$,
   COVER_COPY_DEBOUNCE_MS,
   elements,
-  fontFamilies,
   runtime,
   state,
 } from "./runtime.js";
@@ -50,16 +49,29 @@ function showExportToast(message) {
 
 function setRefineButtonLoading(isLoading) {
   state.isRefining = isLoading;
+  renderRefineButton();
+}
+
+function renderRefineButton() {
   if (!elements.refineButton) {
     return;
   }
 
-  elements.refineButton.disabled = isLoading;
+  const inCoverMode = state.previewMode === "cover";
+  const isLoading = state.isRefining;
+  const isAvailable = inCoverMode;
+
+  elements.refineButton.disabled = isLoading || !isAvailable;
   elements.refineButton.classList.toggle("opacity-70", isLoading);
   elements.refineButton.classList.toggle("cursor-wait", isLoading);
   elements.refineButtonLabel.textContent = isLoading
-    ? "Refining With DeepSeek..."
-    : "AI Refine Layout";
+    ? "AI 重写封面中..."
+    : isAvailable
+      ? "AI 重写封面"
+      : "正文 AI 待配置";
+  elements.refineButton.title = isAvailable
+    ? "根据提示词重新生成封面标题和要点"
+    : "你还没有提供正文 AI 提示词，正文模式下暂不启用。";
 }
 
 function renderAppView() {
@@ -74,6 +86,16 @@ function renderAppView() {
     button.classList.toggle("text-[#8d4d4d]", active);
     button.classList.toggle("text-[#323233]/60", !active);
   });
+}
+
+function renderSidebarMode() {
+  const showingCoverControls = state.previewMode === "cover";
+  elements.coverControlsPanel?.classList.toggle(
+    "hidden",
+    !showingCoverControls
+  );
+  elements.bodyControlsPanel?.classList.toggle("hidden", showingCoverControls);
+  renderRefineButton();
 }
 
 function invalidateCoverCopyForCurrentInput() {
@@ -141,16 +163,9 @@ function renderDocument(parsed) {
     );
   });
 
-  $$("[data-body-layout]").forEach((button) => {
-    const active = button.dataset.bodyLayout === state.bodyLayout;
-    button.classList.toggle("is-active", active);
-    button.classList.toggle("border-primary", active);
-    button.classList.toggle("bg-primary-container/10", active);
-    button.classList.toggle("border-outline-variant/30", !active);
-  });
-
   renderTemplatePicker();
   renderTypography();
+  renderSidebarMode();
   runtime.lastBodyPages = paginateBodyContent(parsed);
   updateBodyPaginationUi(runtime.lastBodyPages);
   buildExportCards();
@@ -176,32 +191,38 @@ function applyGeneratedCoverCopy(coverCopy, cacheKey) {
   rerenderFromInput();
 }
 
+async function fetchCoverCopyFromAi(inputText) {
+  const response = await fetch("/api/ai/cover-copy", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      inputText,
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || "Cover copy generation failed.");
+  }
+
+  const coverTitle = sanitizeCoverTitleText(payload.coverTitle);
+  const coverHighlights = sanitizeCoverHighlights(
+    payload.coverHighlights,
+    /[\u3400-\u9fff]/.test(inputText)
+  );
+
+  if (!coverTitle || coverHighlights.length < 2) {
+    throw new Error("AI returned incomplete cover copy.");
+  }
+
+  return { coverTitle, coverHighlights };
+}
+
 async function requestCoverCopyGeneration(cacheKey, inputText, requestToken) {
   try {
-    const response = await fetch("/api/ai/cover-copy", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inputText,
-      }),
-    });
-
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(payload.error || "Cover copy generation failed.");
-    }
-
-    const coverTitle = sanitizeCoverTitleText(payload.coverTitle);
-    const coverHighlights = sanitizeCoverHighlights(
-      payload.coverHighlights,
-      /[\u3400-\u9fff]/.test(inputText)
-    );
-
-    if (!coverTitle || coverHighlights.length < 2) {
-      throw new Error("AI returned incomplete cover copy.");
-    }
+    const result = await fetchCoverCopyFromAi(inputText);
 
     if (
       requestToken !== runtime.coverCopyRequestToken ||
@@ -210,7 +231,6 @@ async function requestCoverCopyGeneration(cacheKey, inputText, requestToken) {
       return;
     }
 
-    const result = { coverTitle, coverHighlights };
     runtime.coverCopyCache.set(cacheKey, result);
     applyGeneratedCoverCopy(result, cacheKey);
     runtime.didShowCoverCopyFailureToast = false;
@@ -256,67 +276,45 @@ function setActiveView(view) {
   renderAppView();
 }
 
-async function refineLayoutWithAi() {
+async function handlePreviewAiAction() {
+  if (state.previewMode !== "cover") {
+    showToast("你还没有提供正文 AI 提示词，正文模式下暂不启用。");
+    return;
+  }
+
   if (state.isRefining) {
     return;
   }
 
   const inputText = readInputText();
   if (!inputText) {
-    showToast("Please add some content before asking DeepSeek to refine it.");
+    showToast("请先输入或粘贴正文内容，再生成封面文案。");
     return;
   }
 
+  const cacheKey = inputText;
+  const requestToken = ++runtime.coverCopyRequestToken;
+  window.clearTimeout(runtime.coverCopyDebounceTimer);
   setRefineButtonLoading(true);
 
   try {
-    const response = await fetch("/api/ai/refine-layout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inputText,
-        templateId: state.templateId,
-        bodyLayout: state.bodyLayout,
-        fontFamily: state.fontFamily,
-        fontSize: state.fontSize,
-      }),
-    });
+    const result = await fetchCoverCopyFromAi(inputText);
 
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(payload.error || "DeepSeek refine failed.");
+    if (
+      requestToken !== runtime.coverCopyRequestToken ||
+      cacheKey !== readInputText()
+    ) {
+      return;
     }
 
-    if (payload.refinedText) {
-      elements.editorInput.value = payload.refinedText;
-    }
-
-    if (fontFamilies[payload.fontFamily]) {
-      state.fontFamily = payload.fontFamily;
-    }
-
-    if (getTemplateById(payload.templateId)?.id) {
-      state.templateId = payload.templateId;
-    }
-
-    if (["minimal", "magazine", "grid"].includes(payload.bodyLayout)) {
-      state.bodyLayout = payload.bodyLayout;
-    }
-
-    state.previewMode = "body";
-    state.currentBodyPage = 0;
-    invalidateCoverCopyForCurrentInput();
-    rerenderFromInput();
-    scheduleCoverCopyGeneration({ immediate: true });
-    showToast(
-      payload.rationale
-        ? `DeepSeek: ${payload.rationale}`
-        : "DeepSeek finished refining your layout draft."
-    );
+    state.manualCoverCopy = null;
+    state.manualCoverCopyKey = "";
+    runtime.coverCopyCache.set(cacheKey, result);
+    applyGeneratedCoverCopy(result, cacheKey);
+    runtime.didShowCoverCopyFailureToast = false;
+    showToast("已根据提示词重新生成封面标题和要点。");
   } catch (error) {
-    showToast(error.message || "DeepSeek refine failed.");
+    showToast(error.message || "封面 AI 生成失败。");
   } finally {
     setRefineButtonLoading(false);
   }
@@ -324,9 +322,11 @@ async function refineLayoutWithAi() {
 
 function applyTemplateSelection(templateId, { showFeedback = false } = {}) {
   const template = getTemplateById(templateId);
+  const keepTemplatePickerOpen = state.isTemplatePickerOpen;
   state.templateId = template.id;
   state.bodyLayout = template.recommendedBodyLayout;
   state.fontFamily = template.recommendedFontFamily;
+  state.isTemplatePickerOpen = keepTemplatePickerOpen;
   state.currentBodyPage = 0;
 
   if (runtime.lastParsed) {
@@ -361,6 +361,11 @@ function bindEvents() {
     setActiveView("workspace");
   });
 
+  elements.templatePickerToggle?.addEventListener("click", () => {
+    state.isTemplatePickerOpen = !state.isTemplatePickerOpen;
+    renderTemplatePicker();
+  });
+
   elements.editorInput.addEventListener("input", () => {
     invalidateCoverCopyForCurrentInput();
     rerenderFromInput();
@@ -384,9 +389,17 @@ function bindEvents() {
     rerenderFromInput();
   });
 
-  elements.fontSizeRange.addEventListener("input", (event) => {
-    state.fontSize = Number(event.target.value);
-    rerenderFromInput();
+  [
+    ["coverTitleSizeRange", "coverTitleSize", 20, 34],
+    ["coverHighlightsSizeRange", "coverHighlightsSize", 12, 22],
+    ["bodyTitleSizeRange", "bodyTitleSize", 18, 30],
+    ["bodyTextSizeRange", "bodyTextSize", 14, 22],
+  ].forEach(([elementKey, stateKey, min, max]) => {
+    elements[elementKey]?.addEventListener("input", (event) => {
+      const value = Number(event.target.value);
+      state[stateKey] = Math.min(Math.max(value, min), max);
+      rerenderFromInput();
+    });
   });
 
   $$("[data-preview-mode]").forEach((button) => {
@@ -403,13 +416,6 @@ function bindEvents() {
     }
 
     applyTemplateSelection(button.dataset.templateId, { showFeedback: true });
-  });
-
-  $$("[data-body-layout]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.bodyLayout = button.dataset.bodyLayout;
-      rerenderFromInput();
-    });
   });
 
   elements.bodyPrevPageButton.addEventListener("click", () => {
@@ -431,7 +437,7 @@ function bindEvents() {
   });
 
   elements.refineButton.addEventListener("click", () => {
-    refineLayoutWithAi();
+    handlePreviewAiAction();
   });
 
   $$("[data-format]").forEach((button) => {
@@ -473,6 +479,7 @@ export function initApp() {
   try {
     renderAppView();
     bindEvents();
+    renderSidebarMode();
     rerenderFromInput();
     scheduleCoverCopyGeneration({ immediate: true });
     window.__text2cardInitDone = true;

@@ -1,5 +1,4 @@
 import {
-  bodyLayoutLabels,
   elements,
   exportDimensions,
   exportFileExtensions,
@@ -12,6 +11,7 @@ import {
 } from "./runtime.js";
 import { formatExportTimestamp, slugify } from "./utils.js";
 import { renderPageInto } from "./preview.js";
+import { getTemplateById } from "../card-templates.js?v=20260401-cover-template-fix-2";
 
 function getSelectedExportCards() {
   return runtime.lastExportCards.filter((card) =>
@@ -407,11 +407,12 @@ export function renderExportMetadata() {
     count *
     (sizePerPage[state.exportFormat] || sizePerPage.png) *
     (sizePresetFactors[state.exportSizePreset] || 1);
-  const bodyLabel = bodyLayoutLabels[state.bodyLayout] || "Minimalist Focus";
+  const activeTemplate = getTemplateById(state.templateId);
+  const templateLabel = activeTemplate?.name || "Current Template";
 
   elements.layoutPresetLabel.textContent = runtime.lastExportCards.length
-    ? `${bodyLabel} • ${runtime.lastExportCards.length} Pages`
-    : `${bodyLabel} • Awaiting Pages`;
+    ? `${templateLabel} • ${runtime.lastExportCards.length} Pages`
+    : `${templateLabel} • Awaiting Pages`;
   elements.selectedCountLabel.textContent =
     count === 0
       ? "No pages selected"

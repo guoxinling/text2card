@@ -66,7 +66,11 @@ export const state = {
   templateId: DEFAULT_TEMPLATE_ID,
   bodyLayout: getTemplateById(DEFAULT_TEMPLATE_ID).recommendedBodyLayout,
   fontFamily: getTemplateById(DEFAULT_TEMPLATE_ID).recommendedFontFamily,
-  fontSize: 24,
+  coverTitleSize: 24,
+  coverHighlightsSize: 16,
+  bodyTitleSize: 20,
+  bodyTextSize: 16,
+  isTemplatePickerOpen: false,
   currentBodyPage: 0,
   aiProvider: "deepseek",
   isRefining: false,
@@ -87,9 +91,26 @@ export const elements = {
   workspaceView: $("#workspaceView"),
   exportView: $("#exportView"),
   editorInput: $("#editorInput"),
+  templatePickerToggle: $("#templatePickerToggle"),
+  templatePickerPanel: $("#templatePickerPanel"),
+  templatePickerToggleLabel: $("#templatePickerToggleLabel"),
+  currentTemplateThumb: $("#currentTemplateThumb"),
+  currentTemplateIndex: $("#currentTemplateIndex"),
+  currentTemplateIcon: $("#currentTemplateIcon"),
+  currentTemplateShortLabel: $("#currentTemplateShortLabel"),
+  currentTemplateName: $("#currentTemplateName"),
+  currentTemplateSubtitle: $("#currentTemplateSubtitle"),
   fontFamilySelect: $("#fontFamilySelect"),
-  fontSizeRange: $("#fontSizeRange"),
-  fontSizeValue: $("#fontSizeValue"),
+  coverControlsPanel: $("#coverControlsPanel"),
+  bodyControlsPanel: $("#bodyControlsPanel"),
+  coverTitleSizeRange: $("#coverTitleSizeRange"),
+  coverTitleSizeValue: $("#coverTitleSizeValue"),
+  coverHighlightsSizeRange: $("#coverHighlightsSizeRange"),
+  coverHighlightsSizeValue: $("#coverHighlightsSizeValue"),
+  bodyTitleSizeRange: $("#bodyTitleSizeRange"),
+  bodyTitleSizeValue: $("#bodyTitleSizeValue"),
+  bodyTextSizeRange: $("#bodyTextSizeRange"),
+  bodyTextSizeValue: $("#bodyTextSizeValue"),
   coverPreviewCard: $("#coverPreviewCard"),
   coverBadge: $("#coverBadge"),
   coverBadgeIcon: $("#coverBadgeIcon"),
@@ -140,10 +161,18 @@ export function getActiveFontFamily() {
   return fontFamilies[state.fontFamily] || fontFamilies.noto;
 }
 
+export function getCoverTitleSize() {
+  return state.coverTitleSize;
+}
+
+export function getCoverHighlightsSize() {
+  return state.coverHighlightsSize;
+}
+
 export function getBodyTextSize() {
-  return Math.max(state.fontSize - 8, 15);
+  return state.bodyTextSize;
 }
 
 export function getBodyTitleSize() {
-  return Math.max(state.fontSize - 4, 22);
+  return state.bodyTitleSize;
 }

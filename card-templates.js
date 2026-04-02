@@ -401,7 +401,7 @@ export const CARD_TEMPLATES = [
   {
     id: "scandinavian",
     index: 5,
-    name: "斯堪的纳维亚风格",
+    name: "北欧美学风格",
     en: "Scandinavian",
     shortLabel: "Scandi",
     themeKey: "scandinavian",
@@ -437,8 +437,8 @@ export const CARD_TEMPLATES = [
   {
     id: "postmodern-deconstruction",
     index: 8,
-    name: "后现代解构风格",
-    en: "Postmodern Deconstruction",
+    name: "后现代风格",
+    en: "Postmodern",
     shortLabel: "Deconstruction",
     themeKey: "postmodern-deconstruction",
     badgeIcon: "deblur",
@@ -521,8 +521,8 @@ export const CARD_TEMPLATES = [
   {
     id: "deconstructed-swiss-style",
     index: 15,
-    name: "瑞士国际主义风格的解构版",
-    en: "Deconstructed Swiss Style",
+    name: "瑞士解构风格",
+    en: "Swiss Style",
     shortLabel: "Swiss Decon",
     themeKey: "deconstructed-swiss-style",
     badgeIcon: "grid_view",
@@ -545,7 +545,7 @@ export const CARD_TEMPLATES = [
   {
     id: "neo-expressionism",
     index: 17,
-    name: "新表现主义风格",
+    name: "表现主义风格",
     en: "Neo-Expressionism",
     shortLabel: "Expressionist",
     themeKey: "neo-expressionism",
@@ -557,7 +557,7 @@ export const CARD_TEMPLATES = [
   {
     id: "extreme-minimalism",
     index: 18,
-    name: "极简主义的极端版本",
+    name: "极端极简风格",
     en: "Extreme Minimalism",
     shortLabel: "Extreme Minimal",
     themeKey: "extreme-minimalism",
@@ -581,8 +581,8 @@ export const CARD_TEMPLATES = [
   {
     id: "surrealist-digital-collage",
     index: 20,
-    name: "超现实主义数字拼贴",
-    en: "Surrealist Digital Collage",
+    name: "超现实风格",
+    en: "Surrealist",
     shortLabel: "Surreal Collage",
     themeKey: "surrealist-digital-collage",
     badgeIcon: "auto_fix_high",
@@ -593,8 +593,8 @@ export const CARD_TEMPLATES = [
   {
     id: "neo-baroque-digital",
     index: 21,
-    name: "新巴洛克数字风格",
-    en: "Neo-Baroque Digital",
+    name: "新巴洛克风格",
+    en: "Neo-Baroque",
     shortLabel: "Neo-Baroque",
     themeKey: "neo-baroque-digital",
     badgeIcon: "diamond",
@@ -605,8 +605,8 @@ export const CARD_TEMPLATES = [
   {
     id: "liquid-digital-morphism",
     index: 22,
-    name: "液态数字形态主义",
-    en: "Liquid Digital Morphism",
+    name: "数字主义风格",
+    en: "Digital Morphism",
     shortLabel: "Liquid Morph",
     themeKey: "liquid-digital-morphism",
     badgeIcon: "water_drop",
@@ -617,8 +617,8 @@ export const CARD_TEMPLATES = [
   {
     id: "hypersensory-minimalism",
     index: 23,
-    name: "超感官极简主义",
-    en: "Hypersensory Minimalism",
+    name: "感官主义风格",
+    en: "Hypersensory",
     shortLabel: "Hypersensory",
     themeKey: "hypersensory-minimalism",
     badgeIcon: "visibility",
@@ -629,8 +629,8 @@ export const CARD_TEMPLATES = [
   {
     id: "neo-expressionist-data-visualization",
     index: 24,
-    name: "新表现主义数据可视化",
-    en: "Neo-Expressionist Data Visualization",
+    name: "表现主义风格",
+    en: "Neo-Expressionist",
     shortLabel: "Data Expression",
     themeKey: "neo-expressionist-data-visualization",
     badgeIcon: "monitoring",
