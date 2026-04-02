@@ -609,6 +609,10 @@ body {
   color: var(--body-quote-color);
 }
 
+.app-view.hidden {
+  display: none !important;
+}
+
 .preview-card-body[data-script="cjk"] .body-paragraph-lead::first-letter,
 .preview-card-body[data-script="cjk"]
   .preview-page-paragraph-lead::first-letter {
