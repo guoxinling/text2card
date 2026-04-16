@@ -749,6 +749,19 @@ body {
   box-shadow: 0 12px 40px rgba(141, 77, 77, 0.06);
 }
 
+@media (min-width: 768px) {
+  #exportCardGrid {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 360px));
+    justify-content: center;
+  }
+
+  .export-card {
+    width: 360px;
+    max-width: 360px;
+    justify-self: center;
+  }
+}
+
 .export-card-grid-empty {
   display: grid;
   place-items: center;

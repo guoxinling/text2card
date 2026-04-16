@@ -41,11 +41,8 @@ function getExportArchiveName(selectedCards) {
   return `text2card-${slugify(state.templateId)}-${selectedCards.length}pages-${formatExportTimestamp()}.zip`;
 }
 
-function getExportSourceCard(cardId) {
-  return elements.exportCardGrid.querySelector(
-    `[data-export-preview-id="${cardId}"] .preview-card`
-  );
-}
+const EXPORT_SOURCE_CARD_WIDTH = 360;
+const EXPORT_SOURCE_CARD_HEIGHT = 480;
 
 function waitForNextFrame() {
   return new Promise((resolve) => {
@@ -87,8 +84,14 @@ function getExportRenderStage() {
 
 function createExportSnapshotNode(sourceCard, dimensions) {
   const rect = sourceCard.getBoundingClientRect();
-  const sourceWidth = Math.max(rect.width, 1);
-  const sourceHeight = Math.max(rect.height, 1);
+  const sourceWidth = Math.max(
+    rect.width || Number.parseFloat(sourceCard.style.width) || 0,
+    1
+  );
+  const sourceHeight = Math.max(
+    rect.height || Number.parseFloat(sourceCard.style.height) || 0,
+    1
+  );
   const scale = Math.min(
     dimensions.width / sourceWidth,
     dimensions.height / sourceHeight
@@ -136,14 +139,26 @@ function createExportSnapshotNode(sourceCard, dimensions) {
   return frame;
 }
 
-async function renderCardToBlob(card, index) {
-  const sourceCard = getExportSourceCard(card.id);
-  if (!sourceCard) {
-    throw new Error("Could not find the selected export card.");
-  }
+function createExportSourceCard(card) {
+  const sourceCard =
+    card.type === "cover"
+      ? renderExportCoverCard()
+      : renderExportBodyCard(card, Math.max(card.pageNumber - 1, 0));
 
+  sourceCard.style.width = `${EXPORT_SOURCE_CARD_WIDTH}px`;
+  sourceCard.style.height = `${EXPORT_SOURCE_CARD_HEIGHT}px`;
+  sourceCard.style.maxWidth = "none";
+  sourceCard.style.margin = "0";
+  sourceCard.style.flexShrink = "0";
+  return sourceCard;
+}
+
+async function renderCardToBlob(card, index) {
   const stage = getExportRenderStage();
   const dimensions = getExportPresetDimensions();
+  const sourceCard = createExportSourceCard(card);
+  stage.replaceChildren(sourceCard);
+  await waitForNextFrame();
   const snapshotNode = createExportSnapshotNode(sourceCard, dimensions);
   stage.replaceChildren(snapshotNode);
 
@@ -328,7 +343,8 @@ function renderExportCoverCard() {
     .querySelectorAll("[id]")
     .forEach((node) => node.removeAttribute("id"));
   wrapper.removeAttribute("id");
-  wrapper.classList.remove("hidden", "mb-8");
+  wrapper.classList.remove("hidden", "mb-8", "mb-5");
+  wrapper.style.marginBottom = "0";
   return wrapper;
 }
 
